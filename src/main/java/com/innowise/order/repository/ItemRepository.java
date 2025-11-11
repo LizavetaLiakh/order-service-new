@@ -8,12 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Modifying
     @Transactional
     @Query(value = "UPDATE items SET name = :name, price = :price WHERE id = :id", nativeQuery = true)
-    int updateItem(@Param("id") Long id, @Param("name") String name, @Param("price") Double price);
+    int updateItem(@Param("id") Long id, @Param("name") String name, @Param("price") BigDecimal price);
 
 }

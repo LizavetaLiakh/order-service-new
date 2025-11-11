@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -34,8 +35,8 @@ public class Item {
     /**
      * The price of the item. Stores with 2 decimal places.
      */
-    @Column(name = "price", nullable = false)
-    private double price;
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     /**
      * List of records for orders where current item is used. Is not used in db schema.
