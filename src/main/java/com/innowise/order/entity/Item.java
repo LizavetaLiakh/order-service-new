@@ -1,14 +1,11 @@
 package com.innowise.order.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * Entity that stores information about items.
@@ -39,4 +36,10 @@ public class Item {
      */
     @Column(name = "price", nullable = false)
     private double price;
+
+    /**
+     * List of records for orders where current item is used. Is not used in db schema.
+     */
+    @OneToMany(mappedBy = "itemId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
 }

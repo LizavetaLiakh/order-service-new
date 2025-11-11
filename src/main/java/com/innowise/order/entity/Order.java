@@ -1,19 +1,13 @@
 package com.innowise.order.entity;
 
 import com.innowise.order.status.Status;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Entity that stores information about orders.
@@ -51,4 +45,10 @@ public class Order {
      */
     @Column(name = "creation_date", nullable = false)
     private LocalDate creationDate;
+
+    /**
+     * List of records for each item that composes current order. Is not used in db schema.
+     */
+    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
 }
