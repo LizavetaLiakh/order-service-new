@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * Entity that stores information about orders.
+ */
 @Entity
 @Table(name = "orders")
 @Data
@@ -22,18 +25,30 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Order {
 
+    /**
+     * Unique identifier of the order. Generates automatically by the database.
+     */
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Unique identifier of the user from table "users" in mydb. The user who owns the card.
+     */
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    /**
+     * The status of the order.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
+    /**
+     * The date when the order was created.
+     */
     @Column(name = "creation_date", nullable = false)
     private LocalDate creationDate;
 }
