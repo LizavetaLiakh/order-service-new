@@ -1,5 +1,6 @@
 package com.innowise.order.dto;
 
+import com.innowise.order.client.UserResponseDto;
 import com.innowise.order.status.Status;
 import lombok.Data;
 
@@ -30,4 +31,9 @@ public class OrderResponseDto {
      * The date when the order was created.
      */
     private LocalDate creationDate;
+
+    /**
+     * User with {@code userId} who own current order.
+     */
+    private UserResponseDto user;
 }
