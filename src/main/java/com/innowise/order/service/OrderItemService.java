@@ -3,6 +3,9 @@ package com.innowise.order.service;
 import com.innowise.order.dto.OrderItemRequestDto;
 import com.innowise.order.dto.OrderItemResponseDto;
 import com.innowise.order.entity.OrderItem;
+import com.innowise.order.exception.EmptyOrderItemListException;
+import com.innowise.order.exception.EmptyOrderItemListSingleIdException;
+import com.innowise.order.exception.OrderItemNotFoundException;
 import com.innowise.order.mapper.OrderItemMapper;
 import com.innowise.order.repository.OrderItemRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -48,7 +51,7 @@ public class OrderItemService {
     public OrderItemResponseDto getOrderItemById(Long id) {
         return repository.findById(id)
                 .map(mapper::toOrderItemResponseDto)
-                .orElseThrow(() -> new RuntimeException("Order item with id " + id + " not found"));
+                .orElseThrow(() -> new OrderItemNotFoundException(id));
     }
 
     /**
@@ -62,7 +65,7 @@ public class OrderItemService {
                 .map(mapper::toOrderItemResponseDto)
                 .toList();
         if (orderItems.isEmpty()) {
-            throw new RuntimeException("Order items with ids " + ids + " not found");
+            throw new EmptyOrderItemListException(ids);
         }
         return orderItems;
     }
@@ -78,7 +81,7 @@ public class OrderItemService {
                 .map(mapper::toOrderItemResponseDto)
                 .toList();
         if (orderItems.isEmpty()) {
-            throw new RuntimeException("Order items with order id " + orderId + " not found");
+            throw new EmptyOrderItemListSingleIdException("order", orderId);
         }
         return orderItems;
     }
@@ -94,7 +97,7 @@ public class OrderItemService {
                 .map(mapper::toOrderItemResponseDto)
                 .toList();
         if (orderItems.isEmpty()) {
-            throw new RuntimeException("Order items with item id " + itemId + " not found");
+            throw new EmptyOrderItemListSingleIdException("item", itemId);
         }
         return orderItems;
     }
@@ -109,11 +112,11 @@ public class OrderItemService {
         int updated = repository.updateOrderItem(id, orderItemDto.getOrderId(), orderItemDto.getItemId(),
                 orderItemDto.getQuantity());
         if (updated == 0) {
-            throw new RuntimeException("Order item with id " + id + " not found");
+            throw new OrderItemNotFoundException(id);
         }
         return repository.findById(id)
                 .map(mapper::toOrderItemResponseDto)
-                .orElseThrow(() -> new RuntimeException("Order item with id " + id + " not found"));
+                .orElseThrow(() -> new OrderItemNotFoundException(id));
     }
 
     /**
@@ -125,7 +128,7 @@ public class OrderItemService {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new RuntimeException("Order item with id " + id + " not found");
+            throw new OrderItemNotFoundException(id);
         }
     }
 }
