@@ -31,7 +31,7 @@ public class OrderItemController {
         return ResponseEntity.status(HttpStatus.OK).body(orderItem);
     }
 
-    @GetMapping("/gat")
+    @GetMapping("/get")
     public ResponseEntity<List<OrderItemResponseDto>> getOrderItemsByIds(@RequestParam List<Long> ids) {
         List<OrderItemResponseDto> orderItems = service.getOrderItemsByIds(ids);
         return ResponseEntity.status(HttpStatus.OK).body(orderItems);

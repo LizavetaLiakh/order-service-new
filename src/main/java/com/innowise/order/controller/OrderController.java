@@ -4,6 +4,7 @@ import com.innowise.order.client.UserResponseDto;
 import com.innowise.order.dto.OrderRequestDto;
 import com.innowise.order.dto.OrderResponseDto;
 import com.innowise.order.service.OrderService;
+import com.innowise.order.status.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class OrderController {
 
     @GetMapping("/get/status")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@RequestParam String status) {
-        List<OrderResponseDto> orders = service.getOrdersByStatus(status);
+        List<OrderResponseDto> orders = service.getOrdersByStatus(Status.valueOf(status.toUpperCase()));
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
