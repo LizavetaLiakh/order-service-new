@@ -10,7 +10,6 @@ import com.innowise.order.exception.OrderNotFoundException;
 import com.innowise.order.exception.OrdersWithStatusNotFoundException;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.OrderRepository;
-import com.innowise.order.status.Status;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,13 +101,13 @@ public class OrderService {
      * @param status orders' status
      * @return list of orders as DTOs
      */
-    public List<OrderResponseDto> getOrdersByStatus(Status status) {
-        List<OrderResponseDto> orders = repository.findByStatus(status.name())
+    public List<OrderResponseDto> getOrdersByStatus(String status) {
+        List<OrderResponseDto> orders = repository.findByStatus(status)
                 .stream()
                 .map(order -> getOrderResponseWithUser(order, userClient.getUserById(order.getUserId())))
                 .toList();
         if (orders.isEmpty()) {
-            throw new OrdersWithStatusNotFoundException(status.name());
+            throw new OrdersWithStatusNotFoundException(status);
         }
         return orders;
     }
