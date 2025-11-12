@@ -5,8 +5,8 @@ import com.innowise.order.client.UserResponseDto;
 import com.innowise.order.dto.OrderRequestDto;
 import com.innowise.order.dto.OrderResponseDto;
 import com.innowise.order.entity.Order;
-import com.innowise.order.exception.EmptyOrderListException;
-import com.innowise.order.exception.OrderNotFoundException;
+import com.innowise.order.exception.EmptyEntityListException;
+import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.exception.OrdersWithStatusNotFoundException;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.OrderRepository;
@@ -77,7 +77,7 @@ public class OrderService {
      */
     public OrderResponseDto getOrderById(Long id) {
         Order order = repository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Order", id));
         return getOrderResponseWithUser(order, userClient.getUserById(order.getUserId()));
     }
 
@@ -92,7 +92,7 @@ public class OrderService {
                 .map(order -> getOrderResponseWithUser(order, userClient.getUserById(order.getUserId())))
                 .toList();
         if (orders.isEmpty()) {
-            throw new EmptyOrderListException(ids);
+            throw new EmptyEntityListException("orders", ids);
         }
         return orders;
     }
@@ -123,10 +123,10 @@ public class OrderService {
         int updated = repository.updateOrder(id, orderDto.getUserId(), orderDto.getStatus().name(),
                 orderDto.getCreationDate());
         if (updated == 0) {
-            throw new OrderNotFoundException(id);
+            throw new EntityNotFoundException("Order", id);
         }
         Order order = repository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Order", id));
         return getOrderResponseWithUser(order, userClient.getUserById(order.getUserId()));
     }
 
@@ -139,7 +139,7 @@ public class OrderService {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException  e) {
-            throw new OrderNotFoundException(id);
+            throw new EntityNotFoundException("Order", id);
         }
     }
 
