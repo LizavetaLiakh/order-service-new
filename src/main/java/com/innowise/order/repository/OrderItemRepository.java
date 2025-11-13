@@ -13,8 +13,11 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-    List<OrderItem> findByOrderId(Long orderId);
-    List<OrderItem> findByItemId(Long itemId);
+    @Query("SELECT oi FROM OrderItem oi WHERE oi.orderId.id = :orderId")
+    List<OrderItem> findByOrderId(@Param("orderId") Long orderId);
+
+    @Query("SELECT oi FROM OrderItem oi WHERE oi.itemId.id = :orderId")
+    List<OrderItem> findByItemId(@Param("itemId") Long itemId);
 
     @Modifying
     @Transactional
