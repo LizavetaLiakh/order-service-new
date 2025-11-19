@@ -4,4 +4,8 @@ spring:
   data:
     redis:
       host: localhost
-      port: 0
+      port: 6379
+
+user:
+  service:
+    url: http://userservice:8083
