@@ -92,7 +92,7 @@ jobs:
           docker ps
 
       - name: Build and run unit tests - Order Service
-        run: mvn clean verify -Dspring.profiles.active=docker -Dtest='*Test'
+        run: mvn clean verify -Dspring.profiles.active=docker -DexcludeTests="**/*IntegrationTest.java"
 
       - name: SonarCloud scan
         if: env.SONAR_TOKEN != ''
