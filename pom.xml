@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.8</version>
+        <version>3.3.5</version>
         <relativePath/>
     </parent>
 
@@ -143,29 +143,8 @@
 
         <dependency>
             <groupId>org.wiremock</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>3.6.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>11.0.20</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>11.0.20</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty.http2</groupId>
-            <artifactId>http2-server</artifactId>
-            <version>11.0.20</version>
+            <artifactId>wiremock-jetty12</artifactId>
+            <version>3.5.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

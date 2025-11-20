@@ -1,21 +1,22 @@
 package com.innowise.order.integration;
 
 import com.innowise.order.client.UserClient;
+import com.innowise.order.client.UserResponseDto;
 import com.innowise.order.dto.OrderRequestDto;
 import com.innowise.order.dto.OrderResponseDto;
+import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.repository.OrderRepository;
 import com.innowise.order.service.OrderService;
 import com.innowise.order.status.Status;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("test")
 public class OrderServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -27,25 +28,118 @@ public class OrderServiceIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private UserClient userClient;
 
+    @BeforeEach
+    void clean() {
+        repository.deleteAll();
+    }
+
     @Test
     void testCreateAndGetOrder() {
         OrderRequestDto orderRequestDto = new OrderRequestDto();
         orderRequestDto.setUserId(1L);
         orderRequestDto.setStatus(Status.SHIPPED);
-        orderRequestDto.setCreationDate(LocalDate.of(2025, 1, 1));
+        orderRequestDto.setCreationDate(LocalDate.of(2025, 1, 10));
 
         OrderResponseDto createdOrder = service.createOrder(orderRequestDto);
 
         assertNotNull(createdOrder);
-        assertEquals(1L, createdOrder.getId());
         assertEquals(Status.SHIPPED, createdOrder.getStatus());
-        assertEquals(LocalDate.of(2025, 1, 1), createdOrder.getCreationDate());
+        assertEquals(LocalDate.of(2025, 1, 10), createdOrder.getCreationDate());
 
         OrderResponseDto foundOrder = service.getOrderById(createdOrder.getId());
 
         assertEquals(createdOrder.getId(), foundOrder.getId());
-        assertEquals(createdOrder.getUser(), foundOrder.getUser()); // WireMock возвращает пользователя
+        assertEquals(createdOrder.getUser(), foundOrder.getUser());
         assertEquals(createdOrder.getStatus(), foundOrder.getStatus());
         assertEquals(createdOrder.getCreationDate(), foundOrder.getCreationDate());
+    }
+
+    @Test
+    void testGetOrdersByEmail() {
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setId(1L);
+        userResponseDto.setEmail("abc@gmail.com");
+        userResponseDto.setName("Polly McDonald");
+
+        OrderRequestDto orderRequestDto = new OrderRequestDto();
+        orderRequestDto.setUserId(userResponseDto.getId());
+        orderRequestDto.setStatus(Status.SHIPPED);
+        orderRequestDto.setCreationDate(LocalDate.of(2025, 10, 10));
+        service.createOrder(orderRequestDto);
+
+        OrderRequestDto order2 = new OrderRequestDto();
+        order2.setUserId(userResponseDto.getId());
+        order2.setStatus(Status.PENDS_PAY);
+        order2.setCreationDate(LocalDate.of(2025, 2, 10));
+        service.createOrder(order2);
+
+        List<OrderResponseDto> orders = service.getOrdersByEmail(userResponseDto.getEmail());
+
+        assertNotNull(orders);
+        assertEquals(2, orders.size());
+
+        OrderResponseDto firstOrder = orders.get(0);
+        assertEquals(userResponseDto.getId(), firstOrder.getUser().getId());
+        assertEquals(userResponseDto.getEmail(), firstOrder.getUser().getEmail());
+    }
+
+    @Test
+    void testUpdateOrderById() {
+        OrderRequestDto orderRequestDto = new OrderRequestDto();
+        orderRequestDto.setUserId(1L);
+        orderRequestDto.setStatus(Status.PENDS_PAY);
+        orderRequestDto.setCreationDate(LocalDate.of(2025, 10, 10));
+
+        OrderResponseDto createdOrderResponseDto = service.createOrder(orderRequestDto);
+
+        assertNotNull(createdOrderResponseDto);
+        assertEquals(Status.PENDS_PAY, createdOrderResponseDto.getStatus());
+
+        OrderRequestDto updateOrderRequestDto = new OrderRequestDto();
+        updateOrderRequestDto.setUserId(1L);
+        updateOrderRequestDto.setStatus(Status.SHIPPED);
+        updateOrderRequestDto.setCreationDate(LocalDate.of(2025, 4, 10));
+
+        OrderResponseDto updatedOrderResponseDto = service.updateOrderById(createdOrderResponseDto.getId(), updateOrderRequestDto);
+
+        assertNotNull(updatedOrderResponseDto);
+        assertEquals(createdOrderResponseDto.getId(), updatedOrderResponseDto.getId());
+        assertEquals(Status.SHIPPED, updatedOrderResponseDto.getStatus());
+        assertEquals(LocalDate.of(2025, 4, 10), updatedOrderResponseDto.getCreationDate());
+        assertEquals(createdOrderResponseDto.getUser(), updatedOrderResponseDto.getUser());
+    }
+
+    @Test
+    void testUpdateOrderByIdNotFound() {
+        OrderRequestDto updateOrderRequestDto = new OrderRequestDto();
+        updateOrderRequestDto.setUserId(1L);
+        updateOrderRequestDto.setStatus(Status.SHIPPED);
+        updateOrderRequestDto.setCreationDate(LocalDate.of(2025, 4, 10));
+
+        Long nonExistentId = 59L;
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                service.updateOrderById(nonExistentId, updateOrderRequestDto));
+
+        assertEquals("Order with id " + nonExistentId + " not found", exception.getMessage());
+    }
+
+    @Test
+    void testDeleteOrderById() {
+        OrderRequestDto orderRequestDto = new OrderRequestDto();
+        orderRequestDto.setUserId(1L);
+        orderRequestDto.setStatus(Status.SHIPPED);
+        orderRequestDto.setCreationDate(LocalDate.of(2025, 5, 15));
+
+        OrderResponseDto createdOrderResponseDto = service.createOrder(orderRequestDto);
+
+        assertNotNull(createdOrderResponseDto);
+
+        service.deleteOrderById(createdOrderResponseDto.getId());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                service.getOrderById(createdOrderResponseDto.getId()));
+
+        assertEquals("Order with id " + createdOrderResponseDto.getId() + " not found", ex.getMessage());
     }
 }
