@@ -7,6 +7,7 @@ import com.innowise.order.service.OrderService;
 import com.innowise.order.status.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +44,7 @@ public class OrderController {
      * @response 200 OK - Orders found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOwnerOrAdminByEmail(#email)")
     @GetMapping("/get/email")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByUserEmail(@RequestParam String email) {
         List<OrderResponseDto> orders = service.getOrdersByEmail(email);
@@ -58,6 +60,7 @@ public class OrderController {
      * @response 404 Not Found - User not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOwnerOrAdminByEmail(#email)")
     @GetMapping("/users/get/email")
     public ResponseEntity<UserResponseDto> getUserByEmail(@RequestParam String email) {
         UserResponseDto user = service.getUserByEmail(email);
@@ -72,6 +75,7 @@ public class OrderController {
      * @response 201 Created - New order successfully created.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<OrderResponseDto> addOrder(@RequestBody OrderRequestDto orderDto) {
         OrderResponseDto newOrder = service.createOrder(orderDto);
@@ -88,6 +92,7 @@ public class OrderController {
      * @response 404 Not Found - Order not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOrderOwnerOrAdmin(#id)")
     @GetMapping("/get/{id}")
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long id) {
         OrderResponseDto order = service.getOrderById(id);
@@ -104,6 +109,7 @@ public class OrderController {
      * @response 404 Not Found - Orders not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByIds(@RequestParam List<Long> ids) {
         List<OrderResponseDto> orders = service.getOrdersByIds(ids);
@@ -120,9 +126,27 @@ public class OrderController {
      * @response 404 Not Found - Orders not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/status")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@RequestParam String status) {
         List<OrderResponseDto> orders = service.getOrdersByStatus(Status.valueOf(status.toUpperCase()));
+        return ResponseEntity.status(HttpStatus.OK).body(orders);
+    }
+
+    /**
+     * Finds orders by user ID.
+     *
+     * @param userId User's unique identifier.
+     * @return A list of found orders.
+     * @throws com.innowise.order.exception.OrdersWithUserIdNotFoundException If there's no orders with given user ID.
+     * @response 200 OK - Orders found.
+     * @response 404 Not Found - Orders not found.
+     * @response 500 Internal Server Error - Unexpected server error occurred.
+     */
+    @PreAuthorize("@securityService.isOwnerOrAdminByUserId(#userId)")
+    @GetMapping("/get/user_id")
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByUserId(@RequestParam Long userId) {
+        List<OrderResponseDto> orders = service.getOrdersByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
@@ -136,6 +160,7 @@ public class OrderController {
      * @response 404 Not Found - Order not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOrderOwnerOrAdmin(#id)")
     @PutMapping("/update/{id}")
     public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long id,
                                                         @RequestBody OrderRequestDto orderDto) {
@@ -152,6 +177,7 @@ public class OrderController {
      * @response 404 Not Found - Order not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOrderOwnerOrAdmin(#id)")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         service.deleteOrderById(id);

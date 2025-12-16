@@ -5,6 +5,7 @@ import com.innowise.order.dto.ItemResponseDto;
 import com.innowise.order.service.ItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class ItemController {
      * @response 201 Created - New item successfully created.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<ItemResponseDto> addItem(@RequestBody ItemRequestDto itemDto) {
         ItemResponseDto newItem = service.createItem(itemDto);
@@ -55,6 +57,7 @@ public class ItemController {
      * @response 404 Not Found - Item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/get/{id}")
     public ResponseEntity<ItemResponseDto> getItemById(@PathVariable Long id) {
         ItemResponseDto item = service.getItemById(id);
@@ -71,6 +74,7 @@ public class ItemController {
      * @response 404 Not Found - Items not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/get")
     public ResponseEntity<List<ItemResponseDto>> getItemsByIds(@RequestParam List<Long> ids) {
         List<ItemResponseDto> items = service.getItemsByIds(ids);
@@ -87,6 +91,7 @@ public class ItemController {
      * @response 404 Not Found - Item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<ItemResponseDto> updateItem(@PathVariable Long id, @RequestBody ItemRequestDto itemDto) {
         ItemResponseDto updatedItem = service.updateItemById(id, itemDto);
@@ -102,6 +107,7 @@ public class ItemController {
      * @response 404 Not Found - Item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
         service.deleteItemById(id);

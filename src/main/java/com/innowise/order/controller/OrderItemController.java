@@ -5,6 +5,7 @@ import com.innowise.order.dto.OrderItemResponseDto;
 import com.innowise.order.service.OrderItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class OrderItemController {
      * @response 201 Created - New order item successfully created.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<OrderItemResponseDto> addOrderItem(@RequestBody OrderItemRequestDto orderItemDto) {
         OrderItemResponseDto newOrderItem = service.createOrderItem(orderItemDto);
@@ -57,6 +59,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOrderItemOwnerOrAdmin(#id)")
     @GetMapping("/get/{id}")
     public ResponseEntity<OrderItemResponseDto> getOrderItemById(@PathVariable Long id) {
         OrderItemResponseDto orderItem = service.getOrderItemById(id);
@@ -73,6 +76,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order items not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get")
     public ResponseEntity<List<OrderItemResponseDto>> getOrderItemsByIds(@RequestParam List<Long> ids) {
         List<OrderItemResponseDto> orderItems = service.getOrderItemsByIds(ids);
@@ -89,6 +93,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order items not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("@securityService.isOrderOwnerOrAdmin(#orderId)")
     @GetMapping("/get/order-id/{orderId}")
     public ResponseEntity<List<OrderItemResponseDto>> getOrderItemsByOrderId(@PathVariable Long orderId) {
         List<OrderItemResponseDto> orderItems = service.getOrderItemsByOrderId(orderId);
@@ -105,6 +110,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order items not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/item-id/{itemId}")
     public ResponseEntity<List<OrderItemResponseDto>> getOrderItemsByItemId(@PathVariable Long itemId) {
         List<OrderItemResponseDto> orderItems = service.getOrderItemsByItemId(itemId);
@@ -121,6 +127,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<OrderItemResponseDto> updateOrderItem(@PathVariable Long id,
                                                                 @RequestBody OrderItemRequestDto orderItemDto) {
@@ -137,6 +144,7 @@ public class OrderItemController {
      * @response 404 Not Found - Order item not found.
      * @response 500 Internal Server Error - Unexpected server error occurred.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteOrderItem(@PathVariable Long id) {
         service.deleteOrderItemById(id);

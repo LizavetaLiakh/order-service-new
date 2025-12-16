@@ -1,6 +1,7 @@
 package com.innowise.order.repository;
 
 import com.innowise.order.entity.Order;
+import com.innowise.order.status.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +16,7 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserId(Long userId);
-    List<Order> findByStatus(String status);
+    List<Order> findByStatus(Status status);
 
     @Modifying
     @Transactional

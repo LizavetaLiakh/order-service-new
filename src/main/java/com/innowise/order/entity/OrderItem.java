@@ -24,22 +24,22 @@ public class OrderItem {
     private Long id;
 
     /**
-     * Unique identifier of the {@code Order} from table "orders" that owns the entry.
+     * Unique identifier of the {@code Order}that owns the entry.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
+    private Order order;
 
     /**
-     * Unique identifier of the {@code Item} from table "items" that is the entry within the order.
+     * Unique identifier of the {@code Item} that is the entry within the order.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
-    private Item itemId;
+    private Item item;
 
     /**
      * The amount of similar {@code Item}s within the {@code Order}.
      */
-    @Column(name = "quantity", nullable = false)
+    @Column(nullable = false)
     private Integer quantity;
 }

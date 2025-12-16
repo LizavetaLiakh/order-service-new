@@ -41,6 +41,6 @@ public class Item {
     /**
      * List of records for orders where current item is used. Is not used in db schema.
      */
-    @OneToMany(mappedBy = "itemId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
