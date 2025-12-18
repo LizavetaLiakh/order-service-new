@@ -10,7 +10,7 @@ import com.innowise.order.exception.EmptyOrderItemListSingleIdException;
 import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.mapper.OrderItemMapper;
 import com.innowise.order.repository.OrderItemRepository;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -53,7 +53,7 @@ public class OrderItemServiceTest {
         order = new Order();
         order.setId(1L);
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 1));
 
         item = new Item();

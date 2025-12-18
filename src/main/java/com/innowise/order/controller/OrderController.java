@@ -4,7 +4,7 @@ import com.innowise.order.client.UserResponseDto;
 import com.innowise.order.dto.OrderRequestDto;
 import com.innowise.order.dto.OrderResponseDto;
 import com.innowise.order.service.OrderService;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -129,7 +129,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/status")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@RequestParam String status) {
-        List<OrderResponseDto> orders = service.getOrdersByStatus(Status.valueOf(status.toUpperCase()));
+        List<OrderResponseDto> orders = service.getOrdersByStatus(OrderStatus.valueOf(status.toUpperCase()));
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 

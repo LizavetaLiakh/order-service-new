@@ -11,7 +11,7 @@ import com.innowise.order.repository.ItemRepository;
 import com.innowise.order.repository.OrderItemRepository;
 import com.innowise.order.repository.OrderRepository;
 import com.innowise.order.service.OrderItemService;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testCreateAndGetOrderItem() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -79,7 +79,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testGetOrderItemsByIds() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -117,7 +117,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testGetOrderItemsByOrderId() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -142,7 +142,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testGetOrderItemsByItemId() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -167,7 +167,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testUpdateOrderItemById() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -199,7 +199,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testUpdateOrderItemByIdNotFound() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 
@@ -224,7 +224,7 @@ public class OrderItemIntegrationTest extends AbstractIntegrationTest {
     void testDeleteOrderItemById() {
         Order order = new Order();
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 10));
         Order savedOrder = orderRepository.save(order);
 

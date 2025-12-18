@@ -1,6 +1,6 @@
 package com.innowise.order.entity;
 
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,7 +38,7 @@ public class Order {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Status status;
+    private OrderStatus orderStatus;
 
     /**
      * The date when the order was created.

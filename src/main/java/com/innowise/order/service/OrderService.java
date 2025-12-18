@@ -2,23 +2,28 @@ package com.innowise.order.service;
 
 import com.innowise.order.client.UserClient;
 import com.innowise.order.client.UserResponseDto;
+import com.innowise.order.dto.OrderEventDto;
 import com.innowise.order.dto.OrderRequestDto;
 import com.innowise.order.dto.OrderResponseDto;
+import com.innowise.order.dto.PaymentEventDto;
 import com.innowise.order.entity.Order;
 import com.innowise.order.exception.EmptyEntityListException;
 import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.exception.OrdersWithStatusNotFoundException;
 import com.innowise.order.exception.OrdersWithUserIdNotFoundException;
+import com.innowise.order.kafka.OrderProducer;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.OrderRepository;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
+import com.innowise.order.status.PaymentStatus;
 import feign.FeignException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.kafka.annotation.KafkaListener;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,11 +40,15 @@ public class OrderService {
     private final OrderRepository repository;
     private final UserClient userClient;
     private final OrderMapper mapper;
+    private final OrderProducer orderProducer;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public OrderService(OrderRepository orderRepository, UserClient userClient, OrderMapper orderMapper) {
+    public OrderService(OrderRepository orderRepository, UserClient userClient, OrderMapper orderMapper,
+                        OrderProducer orderProducer) {
         this.repository = orderRepository;
         this.userClient = userClient;
         this.mapper = orderMapper;
+        this.orderProducer = orderProducer;
     }
 
     /**
@@ -82,6 +91,16 @@ public class OrderService {
 
         Order order = mapper.toOrder(orderDto);
         Order savedOrder = repository.save(order);
+
+        OrderEventDto event = new OrderEventDto();
+        event.setOrderId(savedOrder.getId());
+        event.setUserId(savedOrder.getUserId());
+        event.setStatus(savedOrder.getOrderStatus());
+        event.setCreationDate(savedOrder.getCreationDate());
+        event.setSource("order-service");
+
+        orderProducer.sendCreateOrderEvent(event);
+
         return getOrderResponseWithUser(savedOrder, userResponseDto);
     }
 
@@ -114,16 +133,16 @@ public class OrderService {
 
     /**
      * Finds orders with some status.
-     * @param status orders' status
+     * @param orderStatus orders' status
      * @return list of orders as DTOs
      */
-    public List<OrderResponseDto> getOrdersByStatus(Status status) {
-        List<OrderResponseDto> orders = repository.findByStatus(status)
+    public List<OrderResponseDto> getOrdersByStatus(OrderStatus orderStatus) {
+        List<OrderResponseDto> orders = repository.findByOrderStatus(orderStatus)
                 .stream()
                 .map(order -> getOrderResponseWithUser(order, userClient.getUserById(order.getUserId())))
                 .toList();
         if (orders.isEmpty()) {
-            throw new OrdersWithStatusNotFoundException(status.name());
+            throw new OrdersWithStatusNotFoundException(orderStatus.name());
         }
         return orders;
     }
@@ -151,7 +170,7 @@ public class OrderService {
      */
     @Transactional
     public OrderResponseDto updateOrderById(Long id, OrderRequestDto orderDto) {
-        int updated = repository.updateOrder(id, orderDto.getUserId(), orderDto.getStatus().name(),
+        int updated = repository.updateOrder(id, orderDto.getUserId(), orderDto.getOrderStatus().name(),
                 orderDto.getCreationDate());
         if (updated == 0) {
             throw new EntityNotFoundException("Order", id);
@@ -184,5 +203,41 @@ public class OrderService {
         return repository.findById(orderId)
                 .map(order -> userClient.getUserById(order.getUserId()).getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("order", orderId));
+    }
+
+    @KafkaListener(topics = "create_payment_v2", groupId = "order-service-group-v2")
+    public void handleCreatePayment(PaymentEventDto paymentEventDto) {
+        if (!"payment-service".equals(paymentEventDto.getSource())) {
+            System.out.println("Ignoring event from non-payment source: " + paymentEventDto.getSource());
+            return;
+        }
+
+        try {
+            OrderRequestDto orderRequest = new OrderRequestDto();
+            orderRequest.setUserId(paymentEventDto.getUserId());
+            orderRequest.setOrderStatus(
+                    paymentEventDto.getStatus() == PaymentStatus.COMPLETED
+                            ? OrderStatus.CONFIRMED
+                            : OrderStatus.CANCELED
+            );
+            orderRequest.setCreationDate(paymentEventDto.getCreationDate());
+            updateOrderStatus(
+                    paymentEventDto.getUserId(),
+                    paymentEventDto.getStatus() == PaymentStatus.COMPLETED
+                            ? OrderStatus.CONFIRMED
+                            : OrderStatus.CANCELED
+            );
+        } catch (Exception e) {
+            System.err.println("Error processing payment event: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("order", orderId));
+
+        order.setOrderStatus(newStatus);
+        repository.save(order);
     }
 }
