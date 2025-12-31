@@ -68,14 +68,14 @@ public class OrderItemServiceTest {
 
         orderItem = new OrderItem();
         orderItem.setId(1L);
-        orderItem.setOrderId(order);
-        orderItem.setItemId(item);
+        orderItem.setOrder(order);
+        orderItem.setItem(item);
         orderItem.setQuantity(2);
 
         orderItem2 = new OrderItem();
         orderItem2.setId(2L);
-        orderItem2.setOrderId(order);
-        orderItem2.setItemId(item2);
+        orderItem2.setOrder(order);
+        orderItem2.setItem(item2);
         orderItem2.setQuantity(1);
 
         orderItemRequestDto = new OrderItemRequestDto();
@@ -256,8 +256,8 @@ public class OrderItemServiceTest {
 
         OrderItem updatedOrderItem = new OrderItem();
         updatedOrderItem.setId(orderItemId);
-        updatedOrderItem.setOrderId(order);
-        updatedOrderItem.setItemId(item2);
+        updatedOrderItem.setOrder(order);
+        updatedOrderItem.setItem(item2);
         updatedOrderItem.setQuantity(3);
 
         OrderItemResponseDto updatedOrderItemResponse = new OrderItemResponseDto();

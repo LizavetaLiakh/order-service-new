@@ -19,8 +19,8 @@ public interface OrderItemMapper {
      * @return {@code OrderItemResponseDto} object
      */
     @Mappings({
-            @Mapping(target = "orderId", source = "orderId", qualifiedByName = "mapOrderToId"),
-            @Mapping(target = "itemId", source = "itemId", qualifiedByName = "mapItemToId")
+            @Mapping(target = "orderId", source = "order.id"),
+            @Mapping(target = "itemId", source = "item.id")
     })
     OrderItemResponseDto toOrderItemResponseDto(OrderItem orderItem);
 
@@ -30,34 +30,26 @@ public interface OrderItemMapper {
      * @return {@code OrderItem} entity
      */
     @Mappings({
-            @Mapping(target = "orderId", source = "orderId", qualifiedByName = "mapToOrder"),
-            @Mapping(target = "itemId", source = "itemId", qualifiedByName = "mapToItem")
+            @Mapping(target = "order", expression = "java(toOrder(orderItemRequestDto.getOrderId()))"),
+            @Mapping(target = "item", expression = "java(toItem(orderItemRequestDto.getItemId()))")
     })
     OrderItem toOrderItem(OrderItemRequestDto orderItemRequestDto);
 
-    @Named("mapToOrder")
-    default Order mapToOrder(Long orderId) {
-        if (orderId == null) return null;
+    default Order toOrder(Long orderId) {
+        if (orderId == null) {
+            return null;
+        }
         Order order = new Order();
         order.setId(orderId);
         return order;
     }
 
-    @Named("mapToItem")
-    default Item mapToItem(Long itemId) {
-        if (itemId == null) return null;
+    default Item toItem(Long itemId) {
+        if (itemId == null) {
+            return null;
+        }
         Item item = new Item();
         item.setId(itemId);
         return item;
-    }
-
-    @Named("mapOrderToId")
-    default Long mapOrderToId(Order order) {
-        return order != null ? order.getId() : null;
-    }
-
-    @Named("mapItemToId")
-    default Long mapItemToId(Item item) {
-        return item != null ? item.getId() : null;
     }
 }

@@ -12,18 +12,18 @@ public class OrderItemRequestDto {
     /**
      * Some {@code Order} from table "orders" that owns current record.
      */
-    @NotNull
+    @NotNull(message = "Order ID must not be NULL")
     private Long orderId;
 
     /**
      * Some {@code Item} from table "items" to put in the order.
      */
-    @NotNull
+    @NotNull(message = "Item ID must not be NULL")
     private Long itemId;
 
     /**
      * The amount of mentioned items in the order.
      */
-    @NotNull
+    @NotNull(message = "Quantity must not be NULL")
     private Integer quantity;
 }

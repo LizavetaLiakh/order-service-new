@@ -8,13 +8,17 @@ import com.innowise.order.entity.Order;
 import com.innowise.order.exception.EmptyEntityListException;
 import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.exception.OrdersWithStatusNotFoundException;
+import com.innowise.order.exception.OrdersWithUserIdNotFoundException;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.OrderRepository;
 import com.innowise.order.status.Status;
+import feign.FeignException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -25,6 +29,7 @@ import java.util.List;
  * </p>
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class OrderService {
 
     private final OrderRepository repository;
@@ -64,10 +69,20 @@ public class OrderService {
      * @param orderDto DTO with new order's data
      * @return created order as DTO with user info
      */
+    @Transactional
     public OrderResponseDto createOrder(OrderRequestDto orderDto) {
+        UserResponseDto userResponseDto;
+        try {
+            userResponseDto = userClient.getUserById(orderDto.getUserId());
+        } catch (FeignException.NotFound e) {
+            throw new EntityNotFoundException("user ", orderDto.getUserId());
+        } catch (FeignException.Unauthorized e) {
+            throw new AccessDeniedException("Not enough rights");
+        }
+
         Order order = mapper.toOrder(orderDto);
         Order savedOrder = repository.save(order);
-        return getOrderResponseWithUser(savedOrder, userClient.getUserById(order.getUserId()));
+        return getOrderResponseWithUser(savedOrder, userResponseDto);
     }
 
     /**
@@ -103,12 +118,28 @@ public class OrderService {
      * @return list of orders as DTOs
      */
     public List<OrderResponseDto> getOrdersByStatus(Status status) {
-        List<OrderResponseDto> orders = repository.findByStatus(status.name())
+        List<OrderResponseDto> orders = repository.findByStatus(status)
                 .stream()
                 .map(order -> getOrderResponseWithUser(order, userClient.getUserById(order.getUserId())))
                 .toList();
         if (orders.isEmpty()) {
             throw new OrdersWithStatusNotFoundException(status.name());
+        }
+        return orders;
+    }
+
+    /**
+     * Finds orders with some user ID.
+     * @param userId User ID.
+     * @return list of orders as DTOs
+     */
+    public List<OrderResponseDto> getOrdersByUserId(Long userId) {
+        List<OrderResponseDto> orders = repository.findByUserId(userId)
+                .stream()
+                .map(order -> getOrderResponseWithUser(order, userClient.getUserById(order.getUserId())))
+                .toList();
+        if (orders.isEmpty()) {
+            throw new OrdersWithUserIdNotFoundException(userId);
         }
         return orders;
     }
@@ -147,5 +178,11 @@ public class OrderService {
         OrderResponseDto orderResponseDto = mapper.toOrderResponseDto(order);
         orderResponseDto.setUser(user);
         return orderResponseDto;
+    }
+
+    public String getOrderOwnerEmail(Long orderId) {
+        return repository.findById(orderId)
+                .map(order -> userClient.getUserById(order.getUserId()).getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("order", orderId));
     }
 }

@@ -167,7 +167,7 @@ public class OrderServiceTest {
 
         List<Order> orders = List.of(order, order2);
 
-        when(repository.findByStatus(Status.SHIPPED.name())).thenReturn(orders);
+        when(repository.findByStatus(Status.SHIPPED)).thenReturn(orders);
         when(userClient.getUserById(1L)).thenReturn(userResponseDto);
         when(mapper.toOrderResponseDto(order)).thenReturn(orderResponseDto);
         when(mapper.toOrderResponseDto(order2)).thenReturn(orderResponseDto2);
@@ -178,7 +178,7 @@ public class OrderServiceTest {
         assertTrue(resultList.contains(orderResponseDto));
         assertTrue(resultList.contains(orderResponseDto2));
 
-        verify(repository).findByStatus(Status.SHIPPED.name());
+        verify(repository).findByStatus(Status.SHIPPED);
         verify(userClient, times(2)).getUserById(1L);
         verify(mapper).toOrderResponseDto(order);
         verify(mapper).toOrderResponseDto(order2);
@@ -186,11 +186,11 @@ public class OrderServiceTest {
 
     @Test
     void testGetOrdersByStatusEmpty() {
-        when(repository.findByStatus(Status.PENDS_PAY.name())).thenReturn(List.of());
+        when(repository.findByStatus(Status.PENDS_PAY)).thenReturn(List.of());
 
         assertThrows(OrdersWithStatusNotFoundException.class, () -> service.getOrdersByStatus(Status.PENDS_PAY));
 
-        verify(repository).findByStatus(Status.PENDS_PAY.name());
+        verify(repository).findByStatus(Status.PENDS_PAY);
         verifyNoInteractions(userClient);
         verifyNoInteractions(mapper);
     }

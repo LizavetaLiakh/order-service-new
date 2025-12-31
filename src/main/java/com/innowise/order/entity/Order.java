@@ -28,7 +28,7 @@ public class Order {
     private Long id;
 
     /**
-     * Unique identifier of the user from table "users" in mydb. The user who owns the card.
+     * Unique identifier of the user from table "users". The user who owns the card.
      */
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -49,6 +49,6 @@ public class Order {
     /**
      * List of records for each item that composes current order. Is not used in db schema.
      */
-    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
