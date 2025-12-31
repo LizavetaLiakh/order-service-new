@@ -1,7 +1,7 @@
 package com.innowise.order.dto;
 
 import com.innowise.order.client.UserResponseDto;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ public class OrderResponseDto {
     /**
      * The current status of the order.
      */
-    private Status status;
+    private OrderStatus orderStatus;
 
     /**
      * The date when the order was created.

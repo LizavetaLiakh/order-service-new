@@ -1,6 +1,6 @@
 package com.innowise.order.dto;
 
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -22,7 +22,7 @@ public class OrderRequestDto {
      * The current status of the order.
      */
     @NotNull
-    private Status status;
+    private OrderStatus orderStatus;
 
     /**
      * The date when the order was created.

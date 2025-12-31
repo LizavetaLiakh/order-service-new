@@ -10,7 +10,7 @@ import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.exception.OrdersWithStatusNotFoundException;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.OrderRepository;
-import com.innowise.order.status.Status;
+import com.innowise.order.status.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -53,7 +53,7 @@ public class OrderServiceTest {
         order = new Order();
         order.setId(1L);
         order.setUserId(1L);
-        order.setStatus(Status.SHIPPED);
+        order.setOrderStatus(OrderStatus.SHIPPED);
         order.setCreationDate(LocalDate.of(2025, 1, 1));
 
         userResponseDto = new UserResponseDto();
@@ -65,25 +65,25 @@ public class OrderServiceTest {
 
         orderRequestDto = new OrderRequestDto();
         orderRequestDto.setUserId(1L);
-        orderRequestDto.setStatus(Status.SHIPPED);
+        orderRequestDto.setOrderStatus(OrderStatus.SHIPPED);
         orderRequestDto.setCreationDate(LocalDate.of(2025, 1, 1));
 
         orderResponseDto = new OrderResponseDto();
         orderResponseDto.setId(1L);
         orderResponseDto.setUser(userResponseDto);
-        orderResponseDto.setStatus(Status.SHIPPED);
+        orderResponseDto.setOrderStatus(OrderStatus.SHIPPED);
         orderResponseDto.setCreationDate(LocalDate.of(2025, 1, 1));
 
         order2 = new Order();
         order2.setId(2L);
         order2.setUserId(1L);
-        order2.setStatus(Status.COMPLETED);
+        order2.setOrderStatus(OrderStatus.COMPLETED);
         order2.setCreationDate(LocalDate.of(2025, 3, 10));
 
         orderResponseDto2 = new OrderResponseDto();
         orderResponseDto2.setId(2L);
         orderResponseDto2.setUser(userResponseDto);
-        orderResponseDto2.setStatus(Status.COMPLETED);
+        orderResponseDto2.setOrderStatus(OrderStatus.COMPLETED);
         orderResponseDto2.setCreationDate(LocalDate.of(2025, 3, 10));
     }
 
@@ -163,22 +163,22 @@ public class OrderServiceTest {
 
     @Test
     void testGerOrdersByStatus() {
-        order2.setStatus(Status.SHIPPED);
+        order2.setOrderStatus(OrderStatus.SHIPPED);
 
         List<Order> orders = List.of(order, order2);
 
-        when(repository.findByStatus(Status.SHIPPED)).thenReturn(orders);
+        when(repository.findByOrderStatus(OrderStatus.SHIPPED)).thenReturn(orders);
         when(userClient.getUserById(1L)).thenReturn(userResponseDto);
         when(mapper.toOrderResponseDto(order)).thenReturn(orderResponseDto);
         when(mapper.toOrderResponseDto(order2)).thenReturn(orderResponseDto2);
 
-        List<OrderResponseDto> resultList = service.getOrdersByStatus(Status.SHIPPED);
+        List<OrderResponseDto> resultList = service.getOrdersByStatus(OrderStatus.SHIPPED);
 
         assertEquals(2, resultList.size());
         assertTrue(resultList.contains(orderResponseDto));
         assertTrue(resultList.contains(orderResponseDto2));
 
-        verify(repository).findByStatus(Status.SHIPPED);
+        verify(repository).findByOrderStatus(OrderStatus.SHIPPED);
         verify(userClient, times(2)).getUserById(1L);
         verify(mapper).toOrderResponseDto(order);
         verify(mapper).toOrderResponseDto(order2);
@@ -186,11 +186,11 @@ public class OrderServiceTest {
 
     @Test
     void testGetOrdersByStatusEmpty() {
-        when(repository.findByStatus(Status.PENDS_PAY)).thenReturn(List.of());
+        when(repository.findByOrderStatus(OrderStatus.PENDS_PAY)).thenReturn(List.of());
 
-        assertThrows(OrdersWithStatusNotFoundException.class, () -> service.getOrdersByStatus(Status.PENDS_PAY));
+        assertThrows(OrdersWithStatusNotFoundException.class, () -> service.getOrdersByStatus(OrderStatus.PENDS_PAY));
 
-        verify(repository).findByStatus(Status.PENDS_PAY);
+        verify(repository).findByOrderStatus(OrderStatus.PENDS_PAY);
         verifyNoInteractions(userClient);
         verifyNoInteractions(mapper);
     }
@@ -200,22 +200,22 @@ public class OrderServiceTest {
         Long orderId = 1L;
         OrderRequestDto updateOrderRequestDto = new OrderRequestDto();
         updateOrderRequestDto.setUserId(5L);
-        updateOrderRequestDto.setStatus(Status.SHIPPED);
+        updateOrderRequestDto.setOrderStatus(OrderStatus.SHIPPED);
         updateOrderRequestDto.setCreationDate(LocalDate.of(2025, 3, 10));
 
-        when(repository.updateOrder(orderId, 5L, Status.SHIPPED.name(),
+        when(repository.updateOrder(orderId, 5L, OrderStatus.SHIPPED.name(),
                 LocalDate.of(2025, 3, 10))).thenReturn(1);
 
         Order updatedOrder = new Order();
         updatedOrder.setId(orderId);
         updatedOrder.setUserId(5L);
-        updatedOrder.setStatus(Status.SHIPPED);
+        updatedOrder.setOrderStatus(OrderStatus.SHIPPED);
         updatedOrder.setCreationDate(LocalDate.of(2025, 3, 10));
 
         OrderResponseDto updatedOrderResponse = new OrderResponseDto();
         updatedOrderResponse.setId(orderId);
         updatedOrderResponse.setUserId(5L);
-        updatedOrderResponse.setStatus(Status.SHIPPED);
+        updatedOrderResponse.setOrderStatus(OrderStatus.SHIPPED);
         updatedOrderResponse.setCreationDate(LocalDate.of(2025, 3, 10));
 
         when(repository.findById(orderId)).thenReturn(Optional.of(updatedOrder));
@@ -227,7 +227,7 @@ public class OrderServiceTest {
         assertNotNull(resultOrderResponseDto);
         assertEquals(updatedOrderResponse, resultOrderResponseDto);
 
-        verify(repository).updateOrder(orderId, 5L, Status.SHIPPED.name(),
+        verify(repository).updateOrder(orderId, 5L, OrderStatus.SHIPPED.name(),
                 LocalDate.of(2025, 3, 10));
         verify(repository).findById(orderId);
         verify(userClient).getUserById(5L);
@@ -239,14 +239,14 @@ public class OrderServiceTest {
         Long orderId = 599L;
         OrderRequestDto updateOrderRequestDto = new OrderRequestDto();
         updateOrderRequestDto.setUserId(5L);
-        updateOrderRequestDto.setStatus(Status.SHIPPED);
+        updateOrderRequestDto.setOrderStatus(OrderStatus.SHIPPED);
         updateOrderRequestDto.setCreationDate(LocalDate.of(2025, 3, 10));
 
         when(repository.updateOrder(anyLong(), anyLong(), anyString(), any())).thenReturn(0);
 
         assertThrows(EntityNotFoundException.class, () -> service.updateOrderById(orderId, updateOrderRequestDto));
 
-        verify(repository).updateOrder(orderId, 5L, Status.SHIPPED.name(),
+        verify(repository).updateOrder(orderId, 5L, OrderStatus.SHIPPED.name(),
                 LocalDate.of(2025, 3, 10));
         verifyNoMoreInteractions(repository);
         verifyNoInteractions(userClient);
@@ -258,7 +258,7 @@ public class OrderServiceTest {
         Long orderId = 1L;
         OrderRequestDto updateOrderRequestDto = new OrderRequestDto();
         updateOrderRequestDto.setUserId(5L);
-        updateOrderRequestDto.setStatus(Status.SHIPPED);
+        updateOrderRequestDto.setOrderStatus(OrderStatus.SHIPPED);
         updateOrderRequestDto.setCreationDate(LocalDate.of(2025, 3, 10));
 
         when(repository.updateOrder(anyLong(), anyLong(), anyString(), any())).thenReturn(1);
@@ -266,7 +266,7 @@ public class OrderServiceTest {
         when(repository.findById(orderId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> service.updateOrderById(orderId, updateOrderRequestDto));
-        verify(repository).updateOrder(orderId, 5L, Status.SHIPPED.name(),
+        verify(repository).updateOrder(orderId, 5L, OrderStatus.SHIPPED.name(),
                 LocalDate.of(2025, 3, 10));
         verify(repository).findById(orderId);
         verifyNoInteractions(userClient);
