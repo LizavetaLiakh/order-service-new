@@ -3,9 +3,9 @@ package com.innowise.order.service;
 import com.innowise.order.dto.OrderItemRequestDto;
 import com.innowise.order.dto.OrderItemResponseDto;
 import com.innowise.order.entity.OrderItem;
-import com.innowise.order.exception.EmptyOrderItemListException;
+import com.innowise.order.exception.EmptyEntityListException;
 import com.innowise.order.exception.EmptyOrderItemListSingleIdException;
-import com.innowise.order.exception.OrderItemNotFoundException;
+import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.mapper.OrderItemMapper;
 import com.innowise.order.repository.OrderItemRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -51,7 +51,7 @@ public class OrderItemService {
     public OrderItemResponseDto getOrderItemById(Long id) {
         return repository.findById(id)
                 .map(mapper::toOrderItemResponseDto)
-                .orElseThrow(() -> new OrderItemNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Order item", id));
     }
 
     /**
@@ -65,7 +65,7 @@ public class OrderItemService {
                 .map(mapper::toOrderItemResponseDto)
                 .toList();
         if (orderItems.isEmpty()) {
-            throw new EmptyOrderItemListException(ids);
+            throw new EmptyEntityListException("order items", ids);
         }
         return orderItems;
     }
@@ -112,11 +112,11 @@ public class OrderItemService {
         int updated = repository.updateOrderItem(id, orderItemDto.getOrderId(), orderItemDto.getItemId(),
                 orderItemDto.getQuantity());
         if (updated == 0) {
-            throw new OrderItemNotFoundException(id);
+            throw new EntityNotFoundException("Order item", id);
         }
         return repository.findById(id)
                 .map(mapper::toOrderItemResponseDto)
-                .orElseThrow(() -> new OrderItemNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Order item", id));
     }
 
     /**
@@ -128,7 +128,7 @@ public class OrderItemService {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new OrderItemNotFoundException(id);
+            throw new EntityNotFoundException("Order item", id);
         }
     }
 }

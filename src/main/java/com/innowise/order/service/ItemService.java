@@ -3,8 +3,8 @@ package com.innowise.order.service;
 import com.innowise.order.dto.ItemRequestDto;
 import com.innowise.order.dto.ItemResponseDto;
 import com.innowise.order.entity.Item;
-import com.innowise.order.exception.EmptyItemListException;
-import com.innowise.order.exception.ItemNotFoundException;
+import com.innowise.order.exception.EmptyEntityListException;
+import com.innowise.order.exception.EntityNotFoundException;
 import com.innowise.order.mapper.ItemMapper;
 import com.innowise.order.repository.ItemRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -49,7 +49,7 @@ public class ItemService {
     public ItemResponseDto getItemById(Long id) {
         return repository.findById(id)
                 .map(mapper::toItemResponseDto)
-                .orElseThrow(() -> new ItemNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Item", id));
     }
 
     /**
@@ -63,7 +63,7 @@ public class ItemService {
                 .map(mapper::toItemResponseDto)
                 .toList();
         if (items.isEmpty()) {
-            throw new EmptyItemListException(ids);
+            throw new EmptyEntityListException("items", ids);
         }
         return items;
     }
@@ -77,11 +77,11 @@ public class ItemService {
     public ItemResponseDto updateItemById(Long id, ItemRequestDto itemDto) {
         int updated = repository.updateItem(id, itemDto.getName(), itemDto.getPrice());
         if (updated == 0) {
-            throw new ItemNotFoundException(id);
+            throw new EntityNotFoundException("Item", id);
         }
         return repository.findById(id)
                 .map(mapper::toItemResponseDto)
-                .orElseThrow(() -> new ItemNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Item", id));
     }
 
     /**
@@ -93,7 +93,7 @@ public class ItemService {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new ItemNotFoundException(id);
+            throw new EntityNotFoundException("Item", id);
         }
     }
 }
