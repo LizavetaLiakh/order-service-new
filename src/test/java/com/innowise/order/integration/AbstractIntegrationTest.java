@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
@@ -53,11 +53,11 @@ public abstract class AbstractIntegrationTest {
         wireMockServer.stubFor(get(urlPathMatching("/users/get/1"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"id\":1,\"email\":\"test@example.com\",\"name\":\"Test User\"}")));
+                        .withBody("{\"id\":1,\"email\":\"abc@gmail.com\",\"name\":\"Polly McDonald\"}")));
 
         wireMockServer.stubFor(get(urlPathMatching("/users/get/email"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"id\":1,\"email\":\"test@example.com\",\"name\":\"Test User\"}")));
+                        .withBody("{\"id\":1,\"email\":\"abc@gmail.com\",\"name\":\"Polly McDonald\"}")));
     }
 }
