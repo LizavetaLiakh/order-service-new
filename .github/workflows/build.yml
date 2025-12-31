@@ -1,0 +1,109 @@
+name: CI pipeline - Order Service
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-order-service:
+    name: Build, Test, Analyze, Docker - Order Service
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: 1111
+          POSTGRES_DB: mydb_order
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U root -d mydb_order"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: mydb_order
+      DB_USERNAME: root
+      DB_PASSWORD: 1111
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: docker
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'zulu'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in {1..15}; do
+            pg_isready -h localhost -p 5432 -U root && echo "PostgreSQL is ready" && break
+            echo "Waiting..."
+            sleep 2
+          done
+
+      - name: Wait for Redis
+        run: |
+          echo "Waiting for Redis and Postgres to be healthy..."
+          for i in {1..15}; do
+          docker inspect --format '{{json .State.Health.Status}}' $(docker ps -q --filter "name=postgres") | grep -q healthy && \
+          docker inspect --format '{{json .State.Health.Status}}' $(docker ps -q --filter "name=redis") | grep -q healthy && \
+          echo "Services are healthy" && break
+          echo "Waiting..."
+          sleep 2
+          done
+          docker ps
+
+      - name: Build and run unit tests - Order Service
+        run: mvn clean verify -Dspring.profiles.active=docker -Pskip-integration-tests
+
+      - name: SonarCloud scan
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t order-service:latest .
